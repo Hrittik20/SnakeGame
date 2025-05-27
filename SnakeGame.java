@@ -4,7 +4,7 @@ import java.awt.event.*;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-public class game extends JFrame implements ActionListener, KeyListener {
+public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
     private int w = 800, h = 600;
 
@@ -17,7 +17,7 @@ public class game extends JFrame implements ActionListener, KeyListener {
     private SecureRandom r = new SecureRandom();
 
 
-    public game() {
+    public SnakeGame() {
         this.setTitle("Snake Game");
         this.setSize(w, h);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -155,6 +155,6 @@ public class game extends JFrame implements ActionListener, KeyListener {
     public void keyTyped(KeyEvent e) {}
 
     public static void main(String[] args) {
-        new game();
+        new SnakeGame();
     }
 }
