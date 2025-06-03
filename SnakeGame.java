@@ -12,13 +12,13 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
     private static final int GAME_SPEED = 100;
     private int width = WINDOW_WIDTH, height = WINDOW_HEIGHT;
 
-    private ArrayList<Point> s = new ArrayList<>();
-    private Point f;
-    private int d = 0; // 0=up, 1=right, 2=down, 3=left
-    private Timer t;
+    private ArrayList<Point> snakeSegments = new ArrayList<>();
+    private Point foodPosition;
+    private int direction = 0; // 0=up, 1=right, 2=down, 3=left
+    private Timer gameTimer;
     private boolean gameOver = false;
     private int score = 0;
-    private SecureRandom r = new SecureRandom();
+    private SecureRandom random = new SecureRandom();
 
 
     public SnakeGame() {
@@ -29,14 +29,14 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         this.addKeyListener(this);
         this.setFocusable(true);
 
-        s.add(new Point(400, 300));
-        s.add(new Point(380, 300));
-        s.add(new Point(360, 300));
+        snakeSegments.add(new Point(400, 300));
+        snakeSegments.add(new Point(380, 300));
+        snakeSegments.add(new Point(360, 300));
 
         generateFood();
 
-        t = new Timer(100, this);
-        t.start();
+        gameTimer = new Timer(100, this);
+        gameTimer.start();
 
         this.setVisible(true);
     }
@@ -49,18 +49,18 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
         if (!gameOver) {
             // Draw snake
-            for (int i = 0; i < s.size(); i++) {
+            for (int i = 0; i < snakeSegments.size(); i++) {
                 if (i == 0) {
                     g.setColor(Color.GREEN);
                 } else {
                     g.setColor(Color.PINK);
                 }
-                g.fillRect(s.get(i).x, s.get(i).y, 20, 20);
+                g.fillRect(snakeSegments.get(i).x, snakeSegments.get(i).y, 20, 20);
             }
 
             // Draw food
             g.setColor(Color.RED);
-            g.fillRect(f.x, f.y, 20, 20);
+            g.fillRect(foodPosition.x, foodPosition.y, 20, 20);
 
             // Draw score
             g.setColor(Color.WHITE);
@@ -76,9 +76,9 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
     public void actionPerformed(ActionEvent e) {
         if (!gameOver) {
-            Point head = new Point(s.get(0));
+            Point head = new Point(snakeSegments.get(0));
 
-            switch (d) {
+            switch (direction) {
                 case 0: head.y -= 20; break; // up
                 case 1: head.x += 20; break; // right
                 case 2: head.y += 20; break; // down
@@ -87,25 +87,25 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
             if (head.x < 0 || head.x >= width || head.y < 50 || head.y >= height) {
                 gameOver = true;
-                t.stop();
+                gameTimer.stop();
                 return;
             }
 
-            for (int i = 0; i < s.size(); i++) {
-                if (head.equals(s.get(i))) {
+            for (int i = 0; i < snakeSegments.size(); i++) {
+                if (head.equals(snakeSegments.get(i))) {
                     gameOver = true;
-                    t.stop();
+                    gameTimer.stop();
                     return;
                 }
             }
 
-            s.add(0, head);
+            snakeSegments.add(0, head);
 
-            if (head.x == f.x && head.y == f.y) {
+            if (head.x == foodPosition.x && head.y == foodPosition.y) {
                 score += 10;
                 generateFood();
             } else {
-                s.remove(s.size() - 1);
+                snakeSegments.remove(snakeSegments.size() - 1);
             }
         }
         repaint();
@@ -115,11 +115,11 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         boolean validPosition = false;
 
         while (!validPosition) {
-            f = new Point((r.nextInt((width-20)/20))*20, (r.nextInt((height-70)/20))*20 + 50);
+            foodPosition = new Point((random.nextInt((width-20)/20))*20, (random.nextInt((height-70)/20))*20 + 50);
 
             validPosition = true;
-            for (Point segment : s) {
-                if (segment.equals(f)) {
+            for (Point segment : snakeSegments) {
+                if (segment.equals(foodPosition)) {
                     validPosition = false;
                     break;
                 }
@@ -134,23 +134,23 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
             if (key == 82) { // R key
                 gameOver = false;
                 score = 0;
-                s.clear();
-                s.add(new Point(400, 300));
-                s.add(new Point(380, 300));
-                s.add(new Point(360, 300));
-                d = 0;
+                snakeSegments.clear();
+                snakeSegments.add(new Point(400, 300));
+                snakeSegments.add(new Point(380, 300));
+                snakeSegments.add(new Point(360, 300));
+                direction = 0;
                 generateFood();
-                t.restart();
+                gameTimer.restart();
             }
         } else {
-            if (key == KeyEvent.VK_UP && d != 2) {
-                d = 0;
-            } else if (key == KeyEvent.VK_RIGHT && d != 3) {
-                d = 1;
-            } else if (key == KeyEvent.VK_DOWN && d != 0) {
-                d = 2;
-            } else if (key == KeyEvent.VK_LEFT && d != 1) {
-                d = 3;
+            if (key == KeyEvent.VK_UP && direction != 2) {
+                direction = 0;
+            } else if (key == KeyEvent.VK_RIGHT && direction != 3) {
+                direction = 1;
+            } else if (key == KeyEvent.VK_DOWN && direction != 0) {
+                direction = 2;
+            } else if (key == KeyEvent.VK_LEFT && direction != 1) {
+                direction = 3;
             }
         }
     }
