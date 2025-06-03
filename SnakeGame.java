@@ -6,7 +6,11 @@ import java.util.ArrayList;
 
 public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
-    private int w = 800, h = 600;
+    private static final int WINDOW_WIDTH = 800;
+    private static final int WINDOW_HEIGHT = 600;
+    private static final int CELL_SIZE = 20;
+    private static final int GAME_SPEED = 100;
+    private int width = WINDOW_WIDTH, height = WINDOW_HEIGHT;
 
     private ArrayList<Point> s = new ArrayList<>();
     private Point f;
@@ -19,7 +23,7 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
     public SnakeGame() {
         this.setTitle("Snake Game");
-        this.setSize(w, h);
+        this.setSize(width, height);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.addKeyListener(this);
@@ -41,7 +45,7 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         super.paint(g);
 
         g.setColor(Color.BLACK);
-        g.fillRect(0, 0, w, h);
+        g.fillRect(0, 0, width, height);
 
         if (!gameOver) {
             // Draw snake
@@ -65,8 +69,8 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         } else {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 24));
-            g.drawString("Game Over! Score: " + score, w/2 - 120, h/2);
-            g.drawString("Press R to restart", w/2 - 80, h/2 + 30);
+            g.drawString("Game Over! Score: " + score, width/2 - 120, height/2);
+            g.drawString("Press R to restart", width/2 - 80, height/2 + 30);
         }
     }
 
@@ -81,7 +85,7 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
                 case 3: head.x -= 20; break; // left
             }
 
-            if (head.x < 0 || head.x >= w || head.y < 50 || head.y >= h) {
+            if (head.x < 0 || head.x >= width || head.y < 50 || head.y >= height) {
                 gameOver = true;
                 t.stop();
                 return;
@@ -111,7 +115,7 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         boolean validPosition = false;
 
         while (!validPosition) {
-            f = new Point((r.nextInt((w-20)/20))*20, (r.nextInt((h-70)/20))*20 + 50);
+            f = new Point((r.nextInt((width-20)/20))*20, (r.nextInt((height-70)/20))*20 + 50);
 
             validPosition = true;
             for (Point segment : s) {
