@@ -102,6 +102,10 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         }
     }
 
+    private boolean isOutOfBounds(Point p) {
+        return p.x < 0 || p.x >= WINDOW_WIDTH || p.y < HEADER_HEIGHT || p.y >= WINDOW_HEIGHT;
+    }
+
     public void actionPerformed(ActionEvent e) {
         if (!gameOver) {
             Point head = new Point(snakeSegments.get(0));
@@ -113,7 +117,7 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
                 case 3 -> head.x -= CELL_SIZE;
             }
 
-            if (head.x < 0 || head.x >= WINDOW_WIDTH || head.y < HEADER_HEIGHT || head.y >= WINDOW_HEIGHT) {
+            if (isOutOfBounds(head)) {
                 gameOver = true;
                 gameTimer.stop();
                 return;
