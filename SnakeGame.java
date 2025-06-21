@@ -95,40 +95,61 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         } else {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 24));
-            g.drawString("Game Over! Score: " + score, WINDOW_WIDTH/2 - 120, WINDOW_HEIGHT/2);
-            g.drawString("Press R to restart", WINDOW_WIDTH/2 - 80, WINDOW_HEIGHT/2 + 30);
+            g.drawString("Game Over! Score: " + score, WINDOW_WIDTH / 2 - 120, WINDOW_HEIGHT / 2);
+            g.drawString("Press R to restart", WINDOW_WIDTH / 2 - 80, WINDOW_HEIGHT / 2 + 30);
         }
     }
 
     public void actionPerformed(ActionEvent e) {
         if (!gameOver) {
-            Point head = new Point(snakeSegments.get(0));
-            head.translate(direction.dx * CELL_SIZE, direction.dy * CELL_SIZE);
+            Point head = getNextHeadPosition();
 
-            if (isOutOfBounds(head)) {
-                gameOver = true;
-                gameTimer.stop();
+            if (checkWallCollision(head) || checkSelfCollision(head)) {
+                endGame();
                 return;
             }
 
-            for (Point segment : snakeSegments) {
-                if (head.equals(segment)) {
-                    gameOver = true;
-                    gameTimer.stop();
-                    return;
-                }
-            }
-
-            snakeSegments.add(0, head);
-
-            if (head.equals(foodPosition)) {
-                score += 10;
-                generateFood();
-            } else {
-                snakeSegments.remove(snakeSegments.size() - 1);
-            }
+            moveSnake(head);
+            handleFoodConsumption(head);
         }
         repaint();
+    }
+
+    private Point getNextHeadPosition() {
+        Point head = new Point(snakeSegments.get(0));
+        head.translate(direction.dx * CELL_SIZE, direction.dy * CELL_SIZE);
+        return head;
+    }
+
+    private boolean checkWallCollision(Point head) {
+        return isOutOfBounds(head);
+    }
+
+    private boolean checkSelfCollision(Point head) {
+        for (Point segment : snakeSegments) {
+            if (head.equals(segment)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void moveSnake(Point head) {
+        snakeSegments.add(0, head);
+        snakeSegments.remove(snakeSegments.size() - 1);
+    }
+
+    private void handleFoodConsumption(Point head) {
+        if (head.equals(foodPosition)) {
+            score += 10;
+            generateFood();
+            snakeSegments.add(snakeSegments.get(snakeSegments.size() - 1));
+        }
+    }
+
+    private void endGame() {
+        gameOver = true;
+        gameTimer.stop();
     }
 
     private boolean isOutOfBounds(Point p) {
@@ -193,7 +214,6 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         super.dispose();
     }
 
-    // ENUM for direction
     enum Direction {
         UP(0, -1),
         RIGHT(1, 0),
