@@ -20,12 +20,10 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
     private int score = 0;
     private SecureRandom random = new SecureRandom();
 
-
     public SnakeGame() {
         initializeWindow();
         initializeGame();
     }
-
 
     private void initializeWindow() {
         setTitle("Snake Game");
@@ -39,16 +37,20 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         setLocationRelativeTo(null);
     }
 
-
     private void initializeGame() {
+        initializeGameState();
+    }
+
+    private void initializeGameState() {
+        gameOver = false;
+        score = 0;
+        direction = 0;
         initializeSnake();
         generateFood();
     }
 
-
     private void initializeSnake() {
         snakeSegments.clear();
-        // Center the snake horizontally and vertically
         int centerX = WINDOW_WIDTH / 2;
         int centerY = WINDOW_HEIGHT / 2;
 
@@ -57,7 +59,6 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         snakeSegments.add(new Point(centerX - 2 * CELL_SIZE, centerY));
     }
 
-
     public void startGame() {
         gameTimer = new Timer(GAME_SPEED, this);
         gameTimer.start();
@@ -65,16 +66,11 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
     }
 
     private void resetGame() {
-        gameOver = false;
-        score = 0;
-        direction = 0;
-
         if (gameTimer != null) {
             gameTimer.stop();
         }
 
-        initializeSnake();
-        generateFood();
+        initializeGameState();
 
         gameTimer = new Timer(GAME_SPEED, this);
         gameTimer.start();
@@ -87,21 +83,14 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
         if (!gameOver) {
-            // Draw snake
             for (int i = 0; i < snakeSegments.size(); i++) {
-                if (i == 0) {
-                    g.setColor(Color.GREEN);
-                } else {
-                    g.setColor(Color.PINK);
-                }
+                g.setColor(i == 0 ? Color.GREEN : Color.PINK);
                 g.fillRect(snakeSegments.get(i).x, snakeSegments.get(i).y, CELL_SIZE, CELL_SIZE);
             }
 
-            // Draw food
             g.setColor(Color.RED);
             g.fillRect(foodPosition.x, foodPosition.y, CELL_SIZE, CELL_SIZE);
 
-            // Draw score
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 16));
             g.drawString("Score: " + score, 10, 50);
@@ -118,10 +107,10 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
             Point head = new Point(snakeSegments.get(0));
 
             switch (direction) {
-                case 0: head.y -= CELL_SIZE; break; // up
-                case 1: head.x += CELL_SIZE; break; // right
-                case 2: head.y += CELL_SIZE; break; // down
-                case 3: head.x -= CELL_SIZE; break; // left
+                case 0 -> head.y -= CELL_SIZE;
+                case 1 -> head.x += CELL_SIZE;
+                case 2 -> head.y += CELL_SIZE;
+                case 3 -> head.x -= CELL_SIZE;
             }
 
             if (head.x < 0 || head.x >= WINDOW_WIDTH || head.y < HEADER_HEIGHT || head.y >= WINDOW_HEIGHT) {
@@ -130,8 +119,8 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
                 return;
             }
 
-            for (int i = 0; i < snakeSegments.size(); i++) {
-                if (head.equals(snakeSegments.get(i))) {
+            for (Point segment : snakeSegments) {
+                if (head.equals(segment)) {
                     gameOver = true;
                     gameTimer.stop();
                     return;
@@ -140,7 +129,7 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
             snakeSegments.add(0, head);
 
-            if (head.x == foodPosition.x && head.y == foodPosition.y) {
+            if (head.equals(foodPosition)) {
                 score += 10;
                 generateFood();
             } else {
