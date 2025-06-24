@@ -77,4 +77,29 @@ public class SnakeGameTest {
         }
     }
 
+    @Test
+    public void testSnakeEatsFoodAtTopEdge() {
+        ArrayList<Point> snake = new ArrayList<>();
+        snake.add(new Point(100, SnakeGameLogic.HEADER_HEIGHT + 20));
+        game.setSnakeSegments(snake);
+        game.setFoodPosition(new Point(100, SnakeGameLogic.HEADER_HEIGHT));
+        game.setDirection(0); // up
+
+        game.update();
+
+        assertEquals(2, game.getSnakeSegments().size());
+        assertEquals(10, game.getScore());
+    }
+
+    @Test
+    public void testInitialSnakeLengthIsThree() {
+        ArrayList<Point> snake = game.getSnakeSegments();
+        assertEquals(3, snake.size());
+    }
+
+    @Test
+    public void testGameIsNotOverOnStart() {
+        assertFalse(game.isGameOver());
+    }
+
 }

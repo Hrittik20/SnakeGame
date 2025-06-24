@@ -81,23 +81,42 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
         if (!gameOver) {
-            for (int i = 0; i < snakeSegments.size(); i++) {
-                g.setColor(i == 0 ? Color.GREEN : Color.PINK);
-                g.fillRect(snakeSegments.get(i).x, snakeSegments.get(i).y, CELL_SIZE, CELL_SIZE);
-            }
-
-            g.setColor(Color.RED);
-            g.fillRect(foodPosition.x, foodPosition.y, CELL_SIZE, CELL_SIZE);
-
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 16));
-            g.drawString("Score: " + score, 10, 50);
+            renderGame(g);
         } else {
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 24));
-            g.drawString("Game Over! Score: " + score, WINDOW_WIDTH / 2 - 120, WINDOW_HEIGHT / 2);
-            g.drawString("Press R to restart", WINDOW_WIDTH / 2 - 80, WINDOW_HEIGHT / 2 + 30);
+            renderGameOver(g);
         }
+    }
+
+    private void renderGame(Graphics g) {
+        renderSnake(g);
+        renderFood(g);
+        renderScore(g);
+    }
+
+    private void renderSnake(Graphics g) {
+        for (int i = 0; i < snakeSegments.size(); i++) {
+            g.setColor(i == 0 ? Color.GREEN : Color.PINK);
+            Point p = snakeSegments.get(i);
+            g.fillRect(p.x, p.y, CELL_SIZE, CELL_SIZE);
+        }
+    }
+
+    private void renderFood(Graphics g) {
+        g.setColor(Color.RED);
+        g.fillRect(foodPosition.x, foodPosition.y, CELL_SIZE, CELL_SIZE);
+    }
+
+    private void renderScore(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("Score: " + score, 10, 50);
+    }
+
+    private void renderGameOver(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.drawString("Game Over! Score: " + score, WINDOW_WIDTH / 2 - 120, WINDOW_HEIGHT / 2);
+        g.drawString("Press R to restart", WINDOW_WIDTH / 2 - 80, WINDOW_HEIGHT / 2 + 30);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -239,6 +258,7 @@ class GameLauncher {
             }
 
             SnakeGame game = new SnakeGame();
+            game.startGame();
             if (game != null) {
             }
         });
