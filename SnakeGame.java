@@ -6,14 +6,16 @@ import java.util.ArrayList;
 
 public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
-    private ArrayList<Point> snakeSegments = new ArrayList<>();
+    private final Renderer renderer = new GameRenderer();
+
+    private final ArrayList<Point> snakeSegments = new ArrayList<>();
     private Point foodPosition;
     private Direction direction = Direction.UP;
     private Timer gameTimer;
     private boolean gameOver = false;
     private boolean isPaused = false;
     private int score = 0;
-    private SecureRandom random = new SecureRandom();
+    private final SecureRandom random = new SecureRandom();
 
     public SnakeGame() {
         initializeWindow();
@@ -38,6 +40,7 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         gameOver = false;
         score = 0;
         direction = Direction.UP;
+        isPaused = false;
         initializeSnake();
         generateFood();
     }
@@ -71,64 +74,21 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
     public void paint(Graphics g) {
         super.paint(g);
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT);
-
-        if (gameOver) {
-            renderGameOver(g);
-        } else if (isPaused) {
-            renderPaused(g);
-        } else {
-            renderGame(g);
-        }
-    }
-
-    private void renderGame(Graphics g) {
-        for (int i = 0; i < snakeSegments.size(); i++) {
-            g.setColor(i == 0 ? Color.GREEN : Color.PINK);
-            Point p = snakeSegments.get(i);
-            g.fillRect(p.x, p.y, GameConfig.CELL_SIZE, GameConfig.CELL_SIZE);
-        }
-
-        g.setColor(Color.RED);
-        g.fillRect(foodPosition.x, foodPosition.y, GameConfig.CELL_SIZE, GameConfig.CELL_SIZE);
-
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 16));
-        g.drawString("Score: " + score, 10, 50);
-    }
-
-    private void renderGameOver(Graphics g) {
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 24));
-        g.drawString("Game Over! Score: " + score,
-                GameConfig.WINDOW_WIDTH / 2 - 120,
-                GameConfig.WINDOW_HEIGHT / 2);
-        g.drawString("Press R to restart",
-                GameConfig.WINDOW_WIDTH / 2 - 80,
-                GameConfig.WINDOW_HEIGHT / 2 + 30);
-    }
-
-    private void renderPaused(Graphics g) {
-        g.setColor(Color.YELLOW);
-        g.setFont(new Font("Arial", Font.BOLD, 24));
-        g.drawString("Game Paused", GameConfig.WINDOW_WIDTH / 2 - 80, GameConfig.WINDOW_HEIGHT / 2);
-        g.setFont(new Font("Arial", Font.PLAIN, 16));
-        g.drawString("Press P to resume", GameConfig.WINDOW_WIDTH / 2 - 60, GameConfig.WINDOW_HEIGHT / 2 + 30);
+        renderer.render(g, this);
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (gameOver || isPaused) return;
+        if (!gameOver && !isPaused) {
+            Point head = getNextHeadPosition();
 
-        Point head = getNextHeadPosition();
+            if (isOutOfBounds(head) || checkSelfCollision(head)) {
+                endGame();
+                return;
+            }
 
-        if (isOutOfBounds(head) || checkSelfCollision(head)) {
-            endGame();
-            return;
+            moveSnake(head);
+            handleFoodConsumption(head);
         }
-
-        moveSnake(head);
-        handleFoodConsumption(head);
         repaint();
     }
 
@@ -138,14 +98,11 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         return head;
     }
 
-    private boolean isOutOfBounds(Point p) {
-        return p.x < 0 || p.x >= GameConfig.WINDOW_WIDTH ||
-                p.y < GameConfig.HEADER_HEIGHT || p.y >= GameConfig.WINDOW_HEIGHT;
-    }
-
     private boolean checkSelfCollision(Point head) {
         for (Point segment : snakeSegments) {
-            if (head.equals(segment)) return true;
+            if (head.equals(segment)) {
+                return true;
+            }
         }
         return false;
     }
@@ -168,8 +125,14 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         gameTimer.stop();
     }
 
+    private boolean isOutOfBounds(Point p) {
+        return p.x < 0 || p.x >= GameConfig.WINDOW_WIDTH ||
+                p.y < GameConfig.HEADER_HEIGHT || p.y >= GameConfig.WINDOW_HEIGHT;
+    }
+
     private void generateFood() {
         boolean validPosition = false;
+
         while (!validPosition) {
             int maxX = (GameConfig.WINDOW_WIDTH - GameConfig.CELL_SIZE) / GameConfig.CELL_SIZE;
             int maxY = (GameConfig.WINDOW_HEIGHT - GameConfig.HEADER_HEIGHT - GameConfig.CELL_SIZE) / GameConfig.CELL_SIZE;
@@ -192,13 +155,12 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
-        if (gameOver) {
-            if (key == KeyEvent.VK_R) {
-                resetGame();
-            }
-        } else if (key == KeyEvent.VK_P) {
+        if (key == KeyEvent.VK_P) {
             isPaused = !isPaused;
-        } else {
+            repaint();
+        } else if (gameOver && key == KeyEvent.VK_R) {
+            resetGame();
+        } else if (!isPaused) {
             switch (key) {
                 case KeyEvent.VK_UP:
                     if (direction != Direction.DOWN) direction = Direction.UP;
@@ -226,6 +188,12 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         }
         super.dispose();
     }
+
+    public boolean isGameOver() { return gameOver; }
+    public boolean isPaused() { return isPaused; }
+    public ArrayList<Point> getSnakeSegments() { return snakeSegments; }
+    public Point getFoodPosition() { return foodPosition; }
+    public int getScore() { return score; }
 
     enum Direction {
         UP(0, -1), RIGHT(1, 0), DOWN(0, 1), LEFT(-1, 0);

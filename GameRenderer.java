@@ -1,48 +1,49 @@
 import java.awt.*;
-import java.util.List;
 
-public class GameRenderer {
+public class GameRenderer implements Renderer {
 
-    private static final Font SCORE_FONT = new Font("Arial", Font.BOLD, 16);
-    private static final Font GAME_OVER_FONT = new Font("Arial", Font.BOLD, 24);
-
-    public void render(Graphics g, boolean gameOver, int score, List<Point> snakeSegments, Point foodPosition,
-                       int windowWidth, int windowHeight, int cellSize) {
+    @Override
+    public void render(Graphics g, SnakeGame game) {
         g.setColor(Color.BLACK);
-        g.fillRect(0, 0, windowWidth, windowHeight);
+        g.fillRect(0, 0, GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT);
 
-        if (!gameOver) {
-            renderSnake(g, snakeSegments, cellSize);
-            renderFood(g, foodPosition, cellSize);
-            renderScore(g, score);
+        if (game.isGameOver()) {
+            renderGameOver(g, game);
+        } else if (game.isPaused()) {
+            renderPaused(g);
         } else {
-            renderGameOver(g, score, windowWidth, windowHeight);
+            renderGame(g, game);
         }
     }
 
-    private void renderSnake(Graphics g, List<Point> snake, int size) {
-        for (int i = 0; i < snake.size(); i++) {
+    private void renderGame(Graphics g, SnakeGame game) {
+        for (int i = 0; i < game.getSnakeSegments().size(); i++) {
             g.setColor(i == 0 ? Color.GREEN : Color.PINK);
-            Point p = snake.get(i);
-            g.fillRect(p.x, p.y, size, size);
+            Point p = game.getSnakeSegments().get(i);
+            g.fillRect(p.x, p.y, GameConfig.CELL_SIZE, GameConfig.CELL_SIZE);
         }
-    }
 
-    private void renderFood(Graphics g, Point food, int size) {
         g.setColor(Color.RED);
-        g.fillRect(food.x, food.y, size, size);
+        Point food = game.getFoodPosition();
+        g.fillRect(food.x, food.y, GameConfig.CELL_SIZE, GameConfig.CELL_SIZE);
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("Score: " + game.getScore(), 10, 50);
     }
 
-    private void renderScore(Graphics g, int score) {
+    private void renderGameOver(Graphics g, SnakeGame game) {
         g.setColor(Color.WHITE);
-        g.setFont(SCORE_FONT);
-        g.drawString("Score: " + score, 10, 50);
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.drawString("Game Over! Score: " + game.getScore(), GameConfig.WINDOW_WIDTH / 2 - 120, GameConfig.WINDOW_HEIGHT / 2);
+        g.drawString("Press R to restart", GameConfig.WINDOW_WIDTH / 2 - 80, GameConfig.WINDOW_HEIGHT / 2 + 30);
     }
 
-    private void renderGameOver(Graphics g, int score, int width, int height) {
-        g.setColor(Color.WHITE);
-        g.setFont(GAME_OVER_FONT);
-        g.drawString("Game Over! Score: " + score, width / 2 - 120, height / 2);
-        g.drawString("Press R to restart", width / 2 - 80, height / 2 + 30);
+    private void renderPaused(Graphics g) {
+        g.setColor(Color.YELLOW);
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.drawString("Game Paused", GameConfig.WINDOW_WIDTH / 2 - 80, GameConfig.WINDOW_HEIGHT / 2);
+        g.setFont(new Font("Arial", Font.PLAIN, 16));
+        g.drawString("Press P to resume", GameConfig.WINDOW_WIDTH / 2 - 60, GameConfig.WINDOW_HEIGHT / 2 + 30);
     }
 }
