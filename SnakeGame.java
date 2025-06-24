@@ -17,9 +17,9 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
     private Direction direction = Direction.UP;
     private Timer gameTimer;
     private boolean gameOver = false;
+    private boolean isPaused = false;
     private int score = 0;
     private SecureRandom random = new SecureRandom();
-    private GameRenderer renderer = new GameRenderer(); //
 
     public SnakeGame() {
         initializeWindow();
@@ -42,6 +42,7 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
 
     private void initializeGameState() {
         gameOver = false;
+        isPaused = false;
         score = 0;
         direction = Direction.UP;
         initializeSnake();
@@ -75,25 +76,75 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
         gameTimer.start();
     }
 
-    @Override
     public void paint(Graphics g) {
         super.paint(g);
-        renderer.render(g, gameOver, score, snakeSegments, foodPosition,
-                WINDOW_WIDTH, WINDOW_HEIGHT, CELL_SIZE);
+
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+        if (gameOver) {
+            renderGameOver(g);
+        } else if (isPaused) {
+            renderPauseMessage(g);
+        } else {
+            renderGame(g);
+        }
+    }
+
+    private void renderGame(Graphics g) {
+        renderSnake(g);
+        renderFood(g);
+        renderScore(g);
+    }
+
+    private void renderSnake(Graphics g) {
+        for (int i = 0; i < snakeSegments.size(); i++) {
+            g.setColor(i == 0 ? Color.GREEN : Color.PINK);
+            Point p = snakeSegments.get(i);
+            g.fillRect(p.x, p.y, CELL_SIZE, CELL_SIZE);
+        }
+    }
+
+    private void renderFood(Graphics g) {
+        g.setColor(Color.RED);
+        g.fillRect(foodPosition.x, foodPosition.y, CELL_SIZE, CELL_SIZE);
+    }
+
+    private void renderScore(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("Score: " + score, 10, 50);
+    }
+
+    private void renderGameOver(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.drawString("Game Over! Score: " + score, WINDOW_WIDTH / 2 - 120, WINDOW_HEIGHT / 2);
+        g.drawString("Press R to restart", WINDOW_WIDTH / 2 - 80, WINDOW_HEIGHT / 2 + 30);
+    }
+
+    private void renderPauseMessage(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.drawString("Game Paused", WINDOW_WIDTH / 2 - 90, WINDOW_HEIGHT / 2);
+        g.drawString("Press P to resume", WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 30);
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (!gameOver) {
-            Point head = getNextHeadPosition();
-
-            if (checkWallCollision(head) || checkSelfCollision(head)) {
-                endGame();
-                return;
-            }
-
-            moveSnake(head);
-            handleFoodConsumption(head);
+        if (gameOver || isPaused) {
+            return;
         }
+
+        Point head = getNextHeadPosition();
+
+        if (checkWallCollision(head) || checkSelfCollision(head)) {
+            endGame();
+            return;
+        }
+
+        moveSnake(head);
+        handleFoodConsumption(head);
+
         repaint();
     }
 
@@ -167,7 +218,10 @@ public class SnakeGame extends JFrame implements ActionListener, KeyListener {
             if (key == KeyEvent.VK_R) {
                 resetGame();
             }
-        } else {
+        } else if (key == KeyEvent.VK_P) {
+            isPaused = !isPaused;
+            repaint();
+        } else if (!isPaused) {
             switch (key) {
                 case KeyEvent.VK_UP:
                     if (direction != Direction.DOWN) direction = Direction.UP;
@@ -222,8 +276,6 @@ class GameLauncher {
 
             SnakeGame game = new SnakeGame();
             game.startGame();
-            if (game != null) {
-            }
         });
     }
 }
